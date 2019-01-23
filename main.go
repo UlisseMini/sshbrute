@@ -1,7 +1,7 @@
 // TODO
 // Instead of options for username etc have it in args in the form user@adress:port
-// Username list?
 // If ssh password auth is not supported, detect it and stop the program
+// Set number of goroutines
 
 // Package main implements a simple ssh bruteforce tool to use with wordlists.
 package main
@@ -24,9 +24,9 @@ var (
 		"indicate the target address")
 
 	user = flag.String("u", "root", "indicate user to use")
-	// Set the timeout depending on the latency between you and the remote host.
+
 	timeout = flag.Duration("t", 300*time.Millisecond,
-		"set timeout for ssh dial response. do not set this too low!")
+		"Set the timeout depending on the latency between you and the remote host.")
 
 	debug = flag.Bool("d", false, "debug mode, print logs to stderr")
 )
