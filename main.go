@@ -1,5 +1,7 @@
 // TODO
-// Once password is found give up on all other ssh requests (context?)
+// Instead of options for username etc have it in args in the form user@adress:port
+// Username list?
+// If ssh password auth is not supported, detect it and stop the program
 
 // Package main implements a simple ssh bruteforce tool to use with wordlists.
 package main
@@ -63,10 +65,8 @@ func main() {
 	go func() {
 		log.Println("starting to recv from finished")
 		for t := range finished {
-			// If we're done then terminate the program (after running cleanup)
-			if t.output() {
-				clean.Exit(0)
-			}
+			// t.output will terminate the progam if it gets the right password
+			t.output()
 		}
 		log.Println("done recv from finished")
 	}()

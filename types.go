@@ -16,9 +16,8 @@ type factory interface {
 type task interface {
 	do() // do the task
 
-	// output the result of the finished task to stdout / stderr,
-	// it returns true if all other tasks should stop.
-	output() bool
+	// output the result of the finished task to stdout / stderr.
+	output()
 }
 
 type sshFactory struct {
@@ -48,12 +47,11 @@ type tryTask struct {
 	result string // status of the password try
 }
 
-func (t *tryTask) output() (allDone bool) {
+func (t *tryTask) output() {
 	pass := color.BlueString(t.pass)
 
 	if t.result == "ACCESS GRANTED" {
 		fmt.Fprintf(os.Stdout, "%s %s\n", pass, color.GreenString(t.result))
-		allDone = true
 	}
 
 	if t.result == "FAILED" {
@@ -64,8 +62,6 @@ func (t *tryTask) output() (allDone bool) {
 	if t.result == "UNFINISHED" {
 		fmt.Fprintf(os.Stderr, "%s %s\n", pass, color.YellowString(t.result))
 	}
-
-	return allDone
 }
 
 func (t *tryTask) do() {
