@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/UlisseMini/clean"
 	"github.com/fatih/color"
 	"golang.org/x/crypto/ssh"
 )
@@ -52,6 +53,7 @@ func (t *tryTask) output() {
 
 	if t.result == "ACCESS GRANTED" {
 		fmt.Fprintf(os.Stdout, "%s %s\n", pass, color.GreenString(t.result))
+		clean.Exit(0)
 	}
 
 	if t.result == "FAILED" {
