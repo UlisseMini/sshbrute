@@ -36,7 +36,11 @@ func main() {
 	defer clean.Do()
 
 	flag.Parse()
-	printUsedValues()
+	// Print options used.
+	fmt.Printf("target: %s@%s\n", *user, *addr)
+	fmt.Printf("timeout: %v\n", timeout)
+	fmt.Printf("wordlist: %s\n", *wordlist)
+
 	if *debug {
 		log.SetOutput(os.Stderr)
 	}
@@ -102,10 +106,4 @@ func main() {
 
 	log.Println("closing finished")
 	close(finished) // all tasks are finished so close finished.
-}
-
-func printUsedValues() {
-	fmt.Printf("target: %s@%s\n", *user, *addr)
-	fmt.Printf("timeout: %v\n", timeout)
-	fmt.Printf("wordlist: %s\n", *wordlist)
 }
