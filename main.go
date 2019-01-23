@@ -49,7 +49,7 @@ func main() {
 	// add closing the file to global cleanup
 	clean.Add(func() {
 		passFile.Close()
-	}, "passFile.Close()")
+	}, "passFile")
 
 	scanner := bufio.NewScanner(passFile)
 
