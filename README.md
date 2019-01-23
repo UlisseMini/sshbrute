@@ -1,4 +1,4 @@
-# sshgobrute
+# sshbrute
 
 This is a program written in Golang for ssh brute force attacks, needs improvements but works well and is fast.
 
@@ -11,40 +11,37 @@ sshgobrute --help
 ```
 
 ```txt
-Usage of sshgobrute:
-  -file string
-        indicate wordlist file to use (default "wordlistfile.txt")
-  -ip string
-        indicate the ip address to brute force (default "192.168.125.100")
-  -port int
-        indicate port to brute force (default 22)
-  -timer duration
-        set timeout to ssh dial response (ex:300ms), don't set this too low (default 200ms)
-  -user string
-        indicate user to brute force (default "root")
+Usage of sshbrute:
+  -a string
+        indicate the target address (default "127.0.0.1:22")
+  -d    debug mode, print logs to stderr
+  -t duration
+        set timeout for ssh dial response. do not set this too low! (default 300ms)
+  -u string
+        indicate user to use (default "root")
+  -w string
+        indicate wordlist file to use (default "wordlist.txt")
 ```
 
 ```sh
-sshgobrute -user username -timer=200ms
+sshbrute -u username -t=200ms -a localhost:2222 -w rockyou.txt
 ```
 
-```txt
-file: wordlistfile.txt
-ip: 192.168.125.100
-port: 22
-user: username
-timer: 200ms
-additional args: []
-Failed: 123456 ---Failed: 12345 ---Failed: money ---Failed: password ---Failed:
-mickey ---Failed: password1 ---Failed: 123456789 ---Failed: 12345678 ---Failed:
-.
-.
-.
----Failed: randy ---Failed: reddog ---Failed: rebecca ---
-+++ Pattern found: SuperSecret +++
-
-Completed in 60.273904113 seconds
-+++ FOUND +++
+will give you some nice colored output where FAIL is red and ACCESS GRANTED is green and the password try is blue. (can't be seen here but trust me)
+```
+target: username@localhost:2222
+timeout: 200ms
+wordlist: rockyou.txt
+123456 FAILED
+12345 FAILED
+123456789 FAILED
+password FAILED
+iloveyou FAILED
+princess FAILED
+1234567 FAILED
+rockyou FAILED
+12345678 FAILED
+abc123 ACCESS GRANTED
 ```
 
 If the sshd is using "PasswordAuthentication no" it won't work.
