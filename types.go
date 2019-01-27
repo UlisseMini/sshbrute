@@ -1,12 +1,10 @@
 package main
 
 import (
-	"fmt"
-	"os"
+	"log"
+	"net"
 	"time"
 
-	"github.com/UlisseMini/clean"
-	"github.com/fatih/color"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -39,6 +37,8 @@ func (s *sshFactory) make(pass string) task {
 
 // tryTask implements the task interface,
 // it tries a password with a username on the remote host.
+//
+// output() is defined in output.go and windows.go
 type tryTask struct {
 	addr    string        // address of remote host
 	pass    string        // the password to try
@@ -48,25 +48,9 @@ type tryTask struct {
 	result string // status of the password try
 }
 
-func (t *tryTask) output() {
-	pass := color.BlueString(t.pass)
-
-	if t.result == "ACCESS GRANTED" {
-		fmt.Fprintf(os.Stdout, "%s %s\n", pass, color.GreenString(t.result))
-		clean.Exit(0)
-	}
-
-	if t.result == "FAILED" {
-		fmt.Fprintf(os.Stderr, "%s %s\n", pass, color.RedString(t.result))
-	}
-
-	// Should never happen
-	if t.result == "UNFINISHED" {
-		fmt.Fprintf(os.Stderr, "%s %s\n", pass, color.YellowString(t.result))
-	}
-}
-
 func (t *tryTask) do() {
+	tries := 0
+retry:
 	config := &ssh.ClientConfig{
 		User:            t.user,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
@@ -82,4 +66,19 @@ func (t *tryTask) do() {
 	}
 
 	t.result = "FAILED"
+	switch e := err.(type) {
+	case net.Error:
+		if e.Timeout() {
+			t.result = "TIMEOUT"
+			if tries < *retries {
+				log.Printf("retrying %q for the %d's time", t.pass, tries+1)
+				tries++
+				goto retry
+			}
+		}
+
+		log.Printf("net.Error: %v", e)
+	default:
+		log.Printf("%v", err)
+	}
 }

@@ -3,31 +3,27 @@
 This is a program written in Golang for ssh brute force attacks, needs improvements but works well and is fast.
 
 ```sh
-go get github.com/aldenso/sshgobrute
-```
-
-```sh
-sshgobrute --help
+go get github.com/UlisseMini/sshbrute
 ```
 
 ```txt
 Usage of sshbrute:
-  -a string
-        indicate the target address (default "127.0.0.1:22")
   -d    debug mode, print logs to stderr
+  -g int
+        how meny goroutines should be making concurrent connections (default 16)
+  -retry int
+        How meny times to retry password on a timeout (default 3)
   -t duration
-        set timeout for ssh dial response. do not set this too low! (default 300ms)
-  -u string
-        indicate user to use (default "root")
+        Set the timeout depending on the latency between you and the remote host. (default 400ms)
   -w string
         indicate wordlist file to use (default "wordlist.txt")
 ```
 
 ```sh
-sshbrute -u username -t=200ms -a localhost:2222 -w rockyou.txt
+sshbrute username@localhost:2222 -t=300ms -w rockyou.txt
 ```
 
-will give you some nice colored output where FAIL is red and ACCESS GRANTED is green and the password try is blue. (can't be seen here but trust me)
+will give you some nice colored output where FAIL is red and ACCESS GRANTED is green and the password try is blue. (not on windows because it sucks lol)
 ```
 target: username@localhost:2222
 timeout: 200ms
@@ -44,4 +40,4 @@ rockyou FAILED
 abc123 ACCESS GRANTED
 ```
 
-If the sshd is using "PasswordAuthentication no" it won't work.
+If the target sshd is using "PasswordAuthentication no" it won't work.

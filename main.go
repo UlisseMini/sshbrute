@@ -1,6 +1,6 @@
 // TODO
-// Instead of options for username etc have it in args in the form user@adress:port
 // If ssh password auth is not supported, detect it and stop the program
+// handle RST packet (retry quit ignore etc)
 
 // Package main implements a simple ssh bruteforce tool to use with wordlists.
 package main
@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -18,26 +19,46 @@ import (
 )
 
 var (
+	user string
+	addr string
+
 	wordlist = flag.String("w", "wordlist.txt", "indicate wordlist file to use")
-	addr     = flag.String("a", "127.0.0.1:22",
-		"indicate the target address")
-
-	user = flag.String("u", "root", "indicate user to use")
-
-	timeout = flag.Duration("t", 300*time.Millisecond,
+	timeout  = flag.Duration("t", 400*time.Millisecond,
 		"Set the timeout depending on the latency between you and the remote host.")
 
 	debug   = flag.Bool("d", false, "debug mode, print logs to stderr")
-	workers = flag.Int("g", 32,
+	workers = flag.Int("g", 16,
 		"how meny goroutines should be making concurrent connections")
+
+	retries = flag.Int("retry", 3,
+		"How meny times to retry on a timeout")
 )
+
+// parseArgs parses cmdline arguments
+func parseArgs() {
+	args := flag.Args()
+	if len(args) != 1 {
+		flag.Usage()
+		clean.Exit(1)
+	}
+
+	atIndex := strings.LastIndexByte(args[0], '@')
+	user = args[0][:atIndex]
+	addr = args[0][atIndex+1:]
+
+	if !strings.ContainsRune(args[0], ':') {
+		addr += ":22"
+		return
+	}
+}
 
 func main() {
 	defer clean.Do()
 
 	flag.Parse()
+	parseArgs()
 	// Print options used.
-	fmt.Printf("target: %s@%s\n", *user, *addr)
+	fmt.Printf("target: %s@%s\n", user, addr)
 	fmt.Printf("timeout: %v\n", timeout)
 	fmt.Printf("wordlist: %s\n", *wordlist)
 
@@ -60,9 +81,9 @@ func main() {
 
 	// create factory
 	fac := &sshFactory{
-		user:    *user,
+		user:    user,
 		timeout: *timeout,
-		addr:    *addr,
+		addr:    addr,
 	}
 
 	// Get finished tasks from the finished channel
@@ -84,7 +105,6 @@ func main() {
 		go func() {
 			defer wg.Done()
 			for line := range lines {
-				log.Printf("create task for %q", line)
 				t := fac.make(line)
 
 				t.do()
@@ -95,7 +115,6 @@ func main() {
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		log.Printf("sending %q over lines (chan string)", line)
 		lines <- line
 	}
 	close(lines)
