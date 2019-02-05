@@ -29,9 +29,6 @@ var (
 	debug   = flag.Bool("d", false, "debug mode, print logs to stderr")
 	workers = flag.Int("g", 16,
 		"how meny goroutines should be making concurrent connections")
-
-	retries = flag.Int("retry", 3,
-		"How meny times to retry on a timeout")
 )
 
 // parseArgs parses cmdline arguments
