@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/ssh"
@@ -49,8 +50,6 @@ type tryTask struct {
 }
 
 func (t *tryTask) do() {
-	tries := 0
-retry:
 	config := &ssh.ClientConfig{
 		User:            t.user,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
@@ -58,6 +57,7 @@ retry:
 		Timeout:         t.timeout,
 	}
 
+retry:
 	// Try and connect with the password used.
 	_, err := ssh.Dial("tcp", t.addr, config)
 	if err == nil {
@@ -70,15 +70,14 @@ retry:
 	case net.Error:
 		if e.Timeout() {
 			t.result = "TIMEOUT"
-			if tries < *retries {
-				log.Printf("retrying %q for the %d's time", t.pass, tries+1)
-				tries++
-				goto retry
-			}
 		}
 
 		log.Printf("net.Error: %v", e)
 	default:
+		if !strings.Contains(err.Error(), "unable to authenticate") {
+			log.Printf("error: %q; retrying...", err)
+			goto retry
+		}
 		log.Printf("%v", err)
 	}
 }
